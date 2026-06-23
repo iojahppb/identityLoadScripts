@@ -1,0 +1,8 @@
+parameters:
+  - name: ssoid
+    type: csv
+    fileName: IdentitySsoBFSessions.txt
+    columnName: ssoid
+    nextValue: iteration
+    nextRow: unique
+    onEnd: loop

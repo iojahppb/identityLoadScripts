@@ -1,0 +1,9 @@
+parameters:
+  - name: username
+    type: csv
+    fileName: bfUsernames.txt
+    columnName: username
+    nextValue: always
+    nextRow: random
+    onEnd: loop
+  

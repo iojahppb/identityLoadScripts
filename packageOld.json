@@ -1,0 +1,26 @@
+{
+  "name": "customer_tribe_devweb",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "zip_journeys_bf": "cat ./scripts/betfair/parameters.yml > parameters.yml && find ./scripts/betfair/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-custTribe-journey.zip * -xr!legacy -xr!zips -xr!logs -xr!data/fss  -x!data/BFUsernames.csv -x!data/PPUsernames.csv -x!transactions.yml\"",
+    "zip_journeys_pp": "cat ./scripts/paddypower/parameters.yml > parameters.yml && find ./scripts/paddypower/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-paddypower-custTribe-journey.zip * -xr!legacy -xr!zips -xr!logs -xr!data/fss  -x!data/BFUsernames.csv -x!data/PPUsernames.csv -x!transactions.yml\"",
+    
+    "zip_onpremise_journeys_bf": "cat ./scripts/betfair/onpremise/parameters.yml > parameters.yml && find ./scripts/betfair/onpremise/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-custTribe-onpremise-journey.zip * -xr!legacy -xr!zips -xr!logs -xr!data/fss  -x!data/BFUsernames.csv -x!data/PPUsernames.csv -x!transactions.yml\"",
+    "zip_onpremise_journeys_pp": "cat ./scripts/paddypower/onpremise/parameters.yml > parameters.yml && find ./scripts/paddypower/onpremise/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-paddypower-custTribe-onpremise-journey.zip * -xr!legacy -xr!zips -xr!logs -xr!data/fss  -x!data/BFUsernames.csv -x!data/PPUsernames.csv -x!transactions.yml\"",
+    
+    "zip_fss_journeys_bf": "cat ./scripts/betfair/fss/parameters.yml > parameters.yml && find ./scripts/betfair/fss/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-custTribe-journey.zip * -xr!legacy -xr!zips -xr!logs -x!transactions.yml\"",
+    
+    "zip_journey_logout_bf": "cat ./scripts/betfair/logout/parameters.yml > parameters.yml && find ./scripts/betfair/logout/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-logout-journey.zip * -xr!legacy -xr!zips -xr!logs -x!transactions.yml\"",
+    "zip_journey_logout_pp": "cat ./scripts/paddypower/logout/parameters.yml > parameters.yml && find ./scripts/paddypower/logout/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-paddypower-logout-journey.zip * -xr!legacy -xr!zips -xr!logs -x!transactions.yml\"",
+    "zip_journey_login_bf": "cat ./scripts/betfair/login/parameters.yml > parameters.yml && find ./scripts/betfair/login/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-login-journey.zip * -xr!legacy -xr!zips -xr!logs -x!transactions.yml\"",
+    "zip_journey_login_pp": "cat ./scripts/paddypower/login/parameters.yml > parameters.yml && find ./scripts/paddypower/login/journeys/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-paddypower-login-journey.zip * -xr!legacy -xr!zips -xr!logs -x!transactions.yml\"",
+    
+    "zip_isolated_tests_bf": "cat ./scripts/betfair/parameters.yml > parameters.yml && find ./scripts/betfair/isolatedTests/ -name '*.yml' -type f | xargs -I {} sh -c \"cat {} > rts.yml; 7z a -r -tzip zips/{}-betfair-isolated-test-journey.zip * -xr!legacy -xr!zips -xr!logs -xr!data/fss  -x!data/BFUsernames.csv -x!data/PPUsernames.csv  -x!transactions.yml\"",
+    
+    "zip_all": "npm run zip_journeys_bf && npm run zip_journeys_pp && npm run zip_onpremise_journeys_bf && npm run zip_onpremise_journeys_pp && npm run zip_journey_login_bf && npm run zip_journey_login_pp"
+  },
+  "author": "",
+  "license": "ISC"
+}
