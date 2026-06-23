@@ -8,7 +8,7 @@ parameters:
     onEnd: loop
   - name: userId
     type: csv
-    fileName: accountid.txt
+    fileName: data/ppUsers.txt
     columnName: userId
     nextValue: iteration
     nextRow: same as accountId

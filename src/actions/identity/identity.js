@@ -6,6 +6,8 @@ module.exports = function (load) {
         SSM_ENDPOINT,
     } = load.config.user.args;
 
+    const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
+
     const {
         identityLogin,
         identityKeepAlive,
@@ -166,12 +168,13 @@ module.exports = function (load) {
         const response = await webRequest({
             url: `https://${SSM_ENDPOINT}:443/SessionManagementService/v1.0`,
             method: 'POST',
+            // returnBody: true,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: '*/*',
                 'user-agent': 'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36',
             },
-            body: `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sec="http://www.betfair.com/security/" xmlns:ses="http://www.betfair.com/servicetypes/v1/SessionManagement/"><soapenv:Header><sec:Credentials></sec:Credentials></soapenv:Header><soapenv:Body><ses:CreateSessionRequest><ses:userAccountReference><ses:accountId>${load.params.accountId}</ses:accountId><ses:userId>${load.params.userId}</ses:userId></ses:userAccountReference><ses:brand>PADDYPOWER</ses:brand><ses:productEntityName><ses:name>CHANGE_PASSWORD_REQUIRED</ses:name></ses:productEntityName><ses:sessionCreationContext><ses:entry key="IP_ADDRESS"><ses:String>82.1.1.0</ses:String></ses:entry><ses:entry key="JURISDICTION_NAME"><ses:String>PP_INTERNATIONAL</ses:String></ses:entry><ses:entry key="SESSION_TIMEOUT"><ses:String>86400</ses:String></ses:entry><ses:entry key="APPLICATION_SPECIFIC_DATA"><ses:String>82:0:0:0:en_GB:Europe/London:EUR:0:0:false:OK:1.1.1.1:false::sweden</ses:String></ses:entry></ses:sessionCreationContext></ses:CreateSessionRequest></soapenv:Body></soapenv:Envelope>`,
+            body: `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sec="http://www.betfair.com/security/" xmlns:ses="http://www.betfair.com/servicetypes/v1/SessionManagement/"><soapenv:Header><sec:Credentials></sec:Credentials></soapenv:Header><soapenv:Body><ses:CreateSessionRequest><ses:userAccountReference><ses:accountId>${load.params.accountId}</ses:accountId><ses:userId>${load.params.userId}</ses:userId></ses:userAccountReference><ses:brand>${BRAND}</ses:brand><ses:productEntityName><ses:name>CHANGE_PASSWORD_REQUIRED</ses:name></ses:productEntityName><ses:sessionCreationContext><ses:entry key="IP_ADDRESS"><ses:String>82.1.1.0</ses:String></ses:entry><ses:entry key="JURISDICTION_NAME"><ses:String>PP_INTERNATIONAL</ses:String></ses:entry><ses:entry key="SESSION_TIMEOUT"><ses:String>86400</ses:String></ses:entry><ses:entry key="APPLICATION_SPECIFIC_DATA"><ses:String>82:0:0:0:en_GB:Europe/London:EUR:0:0:false:OK:1.1.1.1:false::sweden</ses:String></ses:entry></ses:sessionCreationContext></ses:CreateSessionRequest></soapenv:Body></soapenv:Envelope>`,
         }).send();
 
         if (response.size > 0) {
