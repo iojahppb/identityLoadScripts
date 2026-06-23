@@ -28,6 +28,7 @@ const { identitySSMKeepAliveAction } = require('./src/actions/journeys/IdentityS
 const { identitySSMCreateSessionAction } = require('./src/actions/journeys/IdentitySSMCreateSession')(load);
 const { identityLogoutAction } = require('./src/actions/journeys/IdentitySSOLogout')(load);
 const { identityLoginAction } = require('./src/actions/journeys/IdentitySSOLogin')(load);
+const { oauthAuthorizeAction } = require('./src/actions/journeys/OauthAuthorize')(load);
 
 load.initialize(async () => { });
 load.initialize('vuser_init', vuserInit.bind(this, load));
@@ -42,6 +43,7 @@ load.action('Identity SSM Verify Session', identityVerifySessionAction);
 load.action('Identity SSM Keep Alive', identitySSMKeepAliveAction);
 load.action('Identity SSM Create Session', identitySSMCreateSessionAction);
 load.action('Parallel Identity SSM Verify Session', parallelIdentityVerifySessionAction);
+load.action('OAuth Authorize', oauthAuthorizeAction);
 
 load.action('Empty Action', async () => { });
 

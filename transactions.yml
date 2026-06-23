@@ -1,1 +1,1 @@
-- name: custTech.ssm.createSession
+- name: custTech.oauth.authorize

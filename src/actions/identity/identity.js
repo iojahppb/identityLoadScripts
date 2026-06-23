@@ -4,6 +4,8 @@ module.exports = function (load) {
         PRODUCT_NAME,
         PASSWORD,
         SSM_ENDPOINT,
+        OAUTH_CLIENT_ID,
+        OAUTH_REDIRECT_URI,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -12,6 +14,7 @@ module.exports = function (load) {
         identityLogin,
         identityKeepAlive,
         identityLogout,
+        oauthAuthorize,
     } = CustomerTribeEndpoints;
 
     const { webRequest } = require('../../common/webrequest')(load);
@@ -184,6 +187,45 @@ module.exports = function (load) {
         }
     }
 
+    /**
+     * Hits GET `/api/v1/oauth2/authorize` with a whitelisted client_id / redirect_uri and
+     * no ssoid cookie. Considered Passed when the response is a 302 whose Location header
+     * contains "identity" (i.e. the OAuth service redirected back to the identitysso login).
+     */
+    async function dealwithOauthAuthorize() {
+        const transaction = new load.Transaction('custTech.oauth.authorize');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthAuthorize,
+            method: 'GET',
+            disableRedirection: true,
+            headers: {
+                Accept: 'application/json',
+            },
+            queryString: {
+                response_type: 'code',
+                client_id: OAUTH_CLIENT_ID,
+                redirect_uri: OAUTH_REDIRECT_URI,
+                state: 'generatedByLoadTests',
+            },
+        }).send();
+
+        const { Location: locationHeader } = response.headers;
+
+        if (response.status === 302 && locationHeader && locationHeader.includes('identity')) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth authorize failed: status=${response.status} location=${locationHeader}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
     return {
         dealwithIdentitySsoKeepAlive,
         dealwithIdentitySsoLogout,
@@ -191,5 +233,6 @@ module.exports = function (load) {
         dealwithIdentityVerifySession,
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
+        dealwithOauthAuthorize,
     };
 };
