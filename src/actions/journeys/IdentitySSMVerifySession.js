@@ -8,14 +8,14 @@ module.exports = function (load) {
     } = require('../identity/identity')(load);
 
     async function identityVerifySessionAction() {
-        load.setUserCertificate('./data/ssm/sso-prod-sanity.pem', './data/ssm/sso-prod-sanity.pem', 'howmanybets');
+        load.setUserCertificate('./data/sso-prod-sanity.pem', './data/sso-prod-sanity.pem', 'howmanybets');
 
         await dealwithIdentityVerifySession('');
         load.sleep(THINK_TIME);
     }
 
     async function parallelIdentityVerifySessionAction() {
-        load.setUserCertificate('./data/ssm/sso-prod-sanity.pem', './data/ssm/sso-prod-sanity.pem', 'howmanybets');
+        load.setUserCertificate('./data/sso-prod-sanity.pem', './data/sso-prod-sanity.pem', 'howmanybets');
 
         await Promise.all([
             dealwithIdentityVerifySession(1),

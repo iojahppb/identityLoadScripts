@@ -1,0 +1,9 @@
+parameters:
+  - name: username
+    type: csv
+    fileName: data/ppUsers.txt
+    columnName: username
+    nextValue: always
+    nextRow: random
+    onEnd: loop
+  

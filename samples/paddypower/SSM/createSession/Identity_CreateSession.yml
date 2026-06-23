@@ -42,7 +42,7 @@ encryption:
 vuserLogger:                            # Configuration for Vuser logger
   maxBufferSize: 0                   # The maximum buffer size for each Vuser logger.
   logMode: full                         # Specify when to create the log file. Possible values are [full, error, none].
-  logLevel: error                       # The log level for Vuser logger. Possible values are [error, warning, info, debug, trace].
+  logLevel: trace                       # The log level for Vuser logger. Possible values are [error, warning, info, debug, trace].
   showInConsole: false                   # If true, all the Vuser logging is printed to the console.
 
 flow:                                   #Flow Control definition, please refer to documentation for more details.
@@ -59,7 +59,7 @@ flow:                                   #Flow Control definition, please refer t
 
       - name: 'main loop'
         logic: 'sequential'
-        loop: 1
+        loop: 50
         items:
           - name: "Identity SSM Create Session" 
           - name: "Clear Cookies"
@@ -77,5 +77,5 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "0.25"
-  DOMAIN: ".paddypower.com"
+  DOMAIN: ".betfair.com"
   SSM_ENDPOINT: "ssmpp.prd.internal"

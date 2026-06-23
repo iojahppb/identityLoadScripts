@@ -1,8 +1,0 @@
-parameters:
-  - name: ssoid
-    type: csv
-    fileName: UserSessionDetails.txt
-    columnName: ssoid
-    nextValue: iteration
-    nextRow: unique
-    onEnd: loop

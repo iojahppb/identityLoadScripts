@@ -8,7 +8,7 @@ module.exports = function (load) {
     } = require('../identity/identity')(load);
 
     async function identitySSMKeepAliveAction() {
-        load.setUserCertificate('./data/ssm/sso-prod-sanity.pem', './data/ssm/sso-prod-sanity.pem', 'howmanybets');
+        load.setUserCertificate('./data/sso-prod-sanity.pem', './data/sso-prod-sanity.pem', 'howmanybets');
 
         await dealwithIdentityKeepAlive();
         load.sleep(THINK_TIME);

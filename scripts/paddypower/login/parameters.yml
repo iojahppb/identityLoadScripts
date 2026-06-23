@@ -1,9 +1,0 @@
-parameters:
-  - name: username
-    type: csv
-    fileName: data/PPUsernames.csv
-    columnName: username
-    nextValue: always
-    nextRow: random
-    onEnd: loop
-  
