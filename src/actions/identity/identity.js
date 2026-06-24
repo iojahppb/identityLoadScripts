@@ -6,6 +6,7 @@ module.exports = function (load) {
         SSM_ENDPOINT,
         OAUTH_CLIENT_ID,
         OAUTH_REDIRECT_URI,
+        OAUTH_CLIENT_ID_ENCODED,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -15,6 +16,8 @@ module.exports = function (load) {
         identityKeepAlive,
         identityLogout,
         oauthAuthorize,
+        oauthFinalize,
+        oauthToken,
     } = CustomerTribeEndpoints;
 
     const { webRequest } = require('../../common/webrequest')(load);
@@ -226,6 +229,104 @@ module.exports = function (load) {
         return false;
     }
 
+    /**
+     * Calls GET `/api/v1/oauth2/finalize` with ssoid cookie (already in cookie jar),
+     * passing the same client_id / redirect_uri used by authorize.
+     * Expects a 302 whose Location header contains `code=<OTT>`.
+     * Returns the extracted code (one-time token) or `null` on failure.
+     * Used internally by the OAuth token flow.
+     */
+    async function oauthFinalizeForCode() {
+        const transaction = new load.Transaction('custTech.oauth.finalize');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthFinalize,
+            method: 'GET',
+            disableRedirection: true,
+            headers: {
+                Accept: 'application/json',
+            },
+            queryString: {
+                response_type: 'code',
+                client_id: OAUTH_CLIENT_ID,
+                redirect_uri: OAUTH_REDIRECT_URI,
+                state: 'generatedByLoadTests',
+            },
+        }).send();
+
+        const { Location: locationHeader } = response.headers;
+
+        if (response.status === 302 && locationHeader && locationHeader.includes('code=')) {
+            const codeMatch = locationHeader.match(/code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+
+            if (code) {
+                transaction.stop(load.TransactionStatus.Passed);
+                return code;
+            }
+        }
+
+        load.log(
+            `oauth finalize failed: status=${response.status} location=${locationHeader}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return null;
+    }
+
+    /**
+     * Mirrors the Java `tokenAuthorizationCodeHappyFlow` test:
+     *   1. takes an existing ssoid (main session token) loaded from a sessions file,
+     *   2. calls OAuth finalize to obtain a one-time token (code),
+     *   3. POSTs to `/api/v1/oauth2/token` with `grant_type=authorization_code` and the code,
+     *      using `OAUTH_CLIENT_ID_ENCODED` as the `Authorization` header.
+     * Passes when the JSON response contains a non-empty `access_token`.
+     */
+    async function dealwithOauthToken() {
+        const ott = await oauthFinalizeForCode();
+
+        if (!ott) {
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.token');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthToken,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: OAUTH_CLIENT_ID_ENCODED,
+            },
+            body: {
+                grant_type: 'authorization_code',
+                code: ott,
+            },
+            extractors: [
+                new load.JsonPathExtractor('accessToken', {
+                    path: '$.access_token',
+                }),
+            ],
+        }).send();
+
+        const { accessToken } = response.extractors;
+
+        if (accessToken) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth token failed: status=${response.status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
     return {
         dealwithIdentitySsoKeepAlive,
         dealwithIdentitySsoLogout,
@@ -234,5 +335,6 @@ module.exports = function (load) {
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
         dealwithOauthAuthorize,
+        dealwithOauthToken,
     };
 };
