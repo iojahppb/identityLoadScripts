@@ -78,7 +78,7 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "1"
-  DOMAIN: ".paddypower.com"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"
   OAUTH_CLIENT_ID: "uk-paddypower-desktop-client"
   OAUTH_REDIRECT_URI: "https://api-qc.starsweb.io/pam/psn-auth-adapter/api/callback".
   OAUTH_CLIENT_ID_ENCODED: "Basic cG9rZXI6c2VjcmV0"

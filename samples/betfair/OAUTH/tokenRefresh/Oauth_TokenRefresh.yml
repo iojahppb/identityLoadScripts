@@ -76,7 +76,7 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "1"
-  DOMAIN: ".betfair.com"
+  DOMAIN: ".betfair.com.nxt.ppbdev.com"
   OAUTH_CLIENT_ID_ENCODED: "Basic cG9rZXI6c2VjcmV0"
 
 

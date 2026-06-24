@@ -79,4 +79,4 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "1"
-  DOMAIN: ".paddypower.com"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"

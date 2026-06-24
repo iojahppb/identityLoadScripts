@@ -79,5 +79,5 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "0.25"
-  DOMAIN: ".paddypower.com"
-  SSM_ENDPOINT: "ssmpp.prd.internal"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"
+  SSM_ENDPOINT: "ssmpp.nxt.internal"
