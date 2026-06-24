@@ -41,7 +41,7 @@ encryption:
 
 vuserLogger:                            # Configuration for Vuser logger
   maxBufferSize: 0                   # The maximum buffer size for each Vuser logger.
-  logMode: full                         # Specify when to create the log file. Possible values are [full, error, none].
+  logMode: full                        # Specify when to create the log file. Possible values are [full, error, none].
   logLevel: error                       # The log level for Vuser logger. Possible values are [error, warning, info, debug, trace].
   showInConsole: false                   # If true, all the Vuser logging is printed to the console.
 
@@ -56,12 +56,15 @@ flow:                                   #Flow Control definition, please refer t
     # Define the logic between the items, can be sequential, random or shuffle.
     logic: "sequential"
     items:
+      - name: "Load Session Data From File"
+
       - name: 'main loop'
         logic: 'sequential'
         loop: 1
         items:
-          - name: "Clear Cookies"
-          - name: "OAuth Authorize"
+          - name: "OAuth Token Authorization Code"
+
+      - name: "Clear Cookies"
 
 
   finalize:
@@ -76,9 +79,7 @@ thinkTime:                              # Configuration for think time, to contr
 userArguments:
   THINK_TIME: "1"
   DOMAIN: ".paddypower.com"
-  # OAuth client_id / redirect_uri are brand- and environment-specific.
   OAUTH_CLIENT_ID: "uk-paddypower-desktop-client"
-  OAUTH_REDIRECT_URI: "https://api-qc.starsweb.io/pam/psn-auth-adapter/api/callback"
-
-
+  OAUTH_REDIRECT_URI: "https://api-qc.starsweb.io/pam/psn-auth-adapter/api/callback".
+  OAUTH_CLIENT_ID_ENCODED: "Basic cG9rZXI6c2VjcmV0"
 

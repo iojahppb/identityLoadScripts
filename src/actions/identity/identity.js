@@ -4,6 +4,9 @@ module.exports = function (load) {
         PRODUCT_NAME,
         PASSWORD,
         SSM_ENDPOINT,
+        OAUTH_CLIENT_ID,
+        OAUTH_REDIRECT_URI,
+        OAUTH_CLIENT_ID_ENCODED,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -12,6 +15,10 @@ module.exports = function (load) {
         identityLogin,
         identityKeepAlive,
         identityLogout,
+        oauthAuthorize,
+        oauthFinalize,
+        oauthToken,
+        oauthRevoke,
     } = CustomerTribeEndpoints;
 
     const { webRequest } = require('../../common/webrequest')(load);
@@ -184,6 +191,250 @@ module.exports = function (load) {
         }
     }
 
+    /**
+     * Hits GET `/api/v1/oauth2/authorize` with a whitelisted client_id / redirect_uri and
+     * no ssoid cookie. Considered Passed when the response is a 302 whose Location header
+     * contains "identity" (i.e. the OAuth service redirected back to the identitysso login).
+     */
+    async function dealwithOauthAuthorize() {
+        const transaction = new load.Transaction('custTech.oauth.authorize');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthAuthorize,
+            method: 'GET',
+            disableRedirection: true,
+            headers: {
+                Accept: 'application/json',
+            },
+            queryString: {
+                response_type: 'code',
+                client_id: OAUTH_CLIENT_ID,
+                redirect_uri: OAUTH_REDIRECT_URI,
+                state: 'generatedByLoadTests',
+            },
+        }).send();
+
+        const { Location: locationHeader } = response.headers;
+
+        if (response.status === 302 && locationHeader && locationHeader.includes('identity')) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth authorize failed: status=${response.status} location=${locationHeader}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
+    /**
+     * Calls GET `/api/v1/oauth2/finalize` with ssoid cookie (already in cookie jar),
+     * passing the same client_id / redirect_uri used by authorize.
+     * Expects a 302 whose Location header contains `code=<OTT>`.
+     * Returns the extracted code (one-time token) or `null` on failure.
+     * Used internally by the OAuth token flow.
+     */
+    async function oauthFinalizeForCode() {
+        const transaction = new load.Transaction('custTech.oauth.finalize');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthFinalize,
+            method: 'GET',
+            disableRedirection: true,
+            headers: {
+                Accept: 'application/json',
+            },
+            queryString: {
+                response_type: 'code',
+                client_id: OAUTH_CLIENT_ID,
+                redirect_uri: OAUTH_REDIRECT_URI,
+                state: 'generatedByLoadTests',
+            },
+        }).send();
+
+        const { Location: locationHeader } = response.headers;
+
+        if (response.status === 302 && locationHeader && locationHeader.includes('code=')) {
+            const codeMatch = locationHeader.match(/code=([^&]+)/);
+            const code = codeMatch ? decodeURIComponent(codeMatch[1]) : null;
+
+            if (code) {
+                transaction.stop(load.TransactionStatus.Passed);
+                return code;
+            }
+        }
+
+        load.log(
+            `oauth finalize failed: status=${response.status} location=${locationHeader}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return null;
+    }
+
+    /**
+     * Mirrors the Java `tokenAuthorizationCodeHappyFlow` test:
+     *   1. takes an existing ssoid (main session token) loaded from a sessions file,
+     *   2. calls OAuth finalize to obtain a one-time token (code),
+     *   3. POSTs to `/api/v1/oauth2/token` with `grant_type=authorization_code` and the code,
+     *      using `OAUTH_CLIENT_ID_ENCODED` as the `Authorization` header.
+     * Passes when the JSON response contains a non-empty `access_token`.
+     */
+    async function dealwithOauthTokenAuthorizationCode() {
+        const ott = await oauthFinalizeForCode();
+
+        if (!ott) {
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.tokenAuthorizationCode');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthToken,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: OAUTH_CLIENT_ID_ENCODED,
+            },
+            body: {
+                grant_type: 'authorization_code',
+                code: ott,
+            },
+            extractors: [
+                new load.JsonPathExtractor('accessToken', {
+                    path: '$.access_token',
+                }),
+            ],
+        }).send();
+
+        const { accessToken } = response.extractors;
+
+        if (accessToken) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return accessToken;
+        }
+
+        load.log(
+            `oauth tokenAuthorizationCode failed: status=${response.status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return null;
+    }
+
+    /**
+     * Mirrors the Java `refreshTokenRefreshHappyFlow` test:
+     *   1. takes an existing access token loaded from a data file (IdentityOauthBFAccessTokens / IdentityOauthPPAccessTokens),
+     *   2. POSTs to `/api/v1/oauth2/token` with `grant_type=refresh_token` and the access token as `refresh_token`,
+     *      using `OAUTH_CLIENT_ID_ENCODED` as the `Authorization` header.
+     * Passes when the JSON response contains both a non-empty `access_token` and `refresh_token`.
+     */
+    async function dealwithOauthTokenRefresh() {
+        const { accessToken: inputToken } = load.params;
+
+        if (!inputToken) {
+            load.log('oauth tokenRefresh: no accessToken in params', load.LogLevel.error);
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.tokenRefresh');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthToken,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: OAUTH_CLIENT_ID_ENCODED,
+            },
+            body: {
+                grant_type: 'refresh_token',
+                refresh_token: inputToken,
+            },
+            extractors: [
+                new load.JsonPathExtractor('accessToken', {
+                    path: '$.access_token',
+                }),
+                new load.JsonPathExtractor('refreshToken', {
+                    path: '$.refresh_token',
+                }),
+            ],
+        }).send();
+
+        const { accessToken, refreshToken } = response.extractors;
+
+        if (accessToken && refreshToken) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth tokenRefresh failed: status=${response.status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
+    /**
+     * Varianta 1 — Token + Revoke in the same iteration:
+     *   1. calls the full token flow (finalize + token, each with their own transaction),
+     *   2. POSTs to `/api/v1/oauth2/revoke` with the freshly obtained access_token.
+     * Passes when the JSON response contains `status: "SUCCESS"`.
+     */
+    async function dealwithOauthRevoke() {
+        const accessToken = await dealwithOauthTokenAuthorizationCode();
+
+        if (!accessToken) {
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.revoke');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthRevoke,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+            },
+            body: {
+                token: accessToken,
+                token_type_hint: 'access_token',
+            },
+            extractors: [
+                new load.JsonPathExtractor('status', {
+                    path: '$.status',
+                }),
+            ],
+        }).send();
+
+        const { status } = response.extractors;
+
+        if (status === 'SUCCESS') {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth revoke failed: status=${response.status} body_status=${status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
     return {
         dealwithIdentitySsoKeepAlive,
         dealwithIdentitySsoLogout,
@@ -191,5 +442,9 @@ module.exports = function (load) {
         dealwithIdentityVerifySession,
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
+        dealwithOauthAuthorize,
+        dealwithOauthTokenAuthorizationCode,
+        dealwithOauthTokenRefresh,
+        dealwithOauthRevoke,
     };
 };

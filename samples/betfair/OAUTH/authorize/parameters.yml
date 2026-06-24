@@ -1,7 +1,7 @@
 parameters:
   - name: ignored
     type: csv
-    fileName: data/ppUsers.txt
+    fileName: data/bfUsers.txt
     columnName: accountId
     nextValue: iteration
     nextRow: sequential
