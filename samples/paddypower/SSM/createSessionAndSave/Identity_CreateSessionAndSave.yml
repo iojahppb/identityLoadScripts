@@ -72,8 +72,8 @@ thinkTime:
 
 userArguments:
   THINK_TIME: "0.25"
-  DOMAIN: ".paddypower.com"
-  SSM_ENDPOINT: "ssmpp.prd.internal"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"
+  SSM_ENDPOINT: "ssmpp.nxt.internal"
   CREATE_ACCESS_TOKENS: "false"
   OAUTH_CLIENT_ID: "uk-paddypower-desktop-client"
   OAUTH_REDIRECT_URI: "https://api-qc.starsweb.io/pam/psn-auth-adapter/api/callback"

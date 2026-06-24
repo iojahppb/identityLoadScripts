@@ -80,6 +80,6 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "0.25"
-  DOMAIN: ".skybet.com"
-  SSM_ENDPOINT: "ssmsbg.prd.internal"
+  DOMAIN: ".skybet.com.nxt.ppbdev.com"
+  SSM_ENDPOINT: "ssmsbg.nxt.internal"
 

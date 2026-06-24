@@ -71,8 +71,8 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "0.25"
-  DOMAIN: ".skybet.com"
-  ISS_ENDPOINT: "isssbg.prd.internal"
+  DOMAIN: ".skybet.com.nxt.ppbdev.com"
+  ISS_ENDPOINT: "isssbg.nxt.internal"
   PASSWORD: "964459"
   SHOULD_USE_EXISTING_USERNAMES: "true"
   IP_ADDRESS: "random"

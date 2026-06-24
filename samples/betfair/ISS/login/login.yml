@@ -71,9 +71,9 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "0.25"
-  DOMAIN: ".betfair.com"
-  ISS_ENDPOINT: "issbf.prd.internal"
-  PASSWORD: "parola03"
+  DOMAIN: ".betfair.com.nxt.ppbdev.com"
+  ISS_ENDPOINT: "issbf.nxt.internal"
+  PASSWORD: "P@rola03"
   SHOULD_USE_EXISTING_USERNAMES: "true"
   IP_ADDRESS: "random"
   JA4: "random"

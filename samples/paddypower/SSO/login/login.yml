@@ -76,5 +76,5 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "1"
-  DOMAIN: ".paddypower.com"
-  PASSWORD: "parola03"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"
+  PASSWORD: "P@rola03"

@@ -71,9 +71,9 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments:
   THINK_TIME: "0.25"
-  DOMAIN: ".paddypower.com"
-  ISS_ENDPOINT: "isspp.prd.internal"
-  PASSWORD: "parola03"
+  DOMAIN: ".paddypower.com.nxt.ppbdev.com"
+  ISS_ENDPOINT: "isspp.nxt.internal"
+  PASSWORD: "P@rola03"
   SHOULD_USE_EXISTING_USERNAMES: "true"
   IP_ADDRESS: "random"
   JA4: "random"

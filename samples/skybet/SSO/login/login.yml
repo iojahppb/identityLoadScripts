@@ -76,6 +76,6 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "1"
-  DOMAIN: ".skybet.com"
+  DOMAIN: ".skybet.com.nxt.ppbdev.com"
   PASSWORD: "964459"
 
