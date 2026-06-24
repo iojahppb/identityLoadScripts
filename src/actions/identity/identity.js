@@ -18,6 +18,7 @@ module.exports = function (load) {
         oauthAuthorize,
         oauthFinalize,
         oauthToken,
+        oauthRevoke,
     } = CustomerTribeEndpoints;
 
     const { webRequest } = require('../../common/webrequest')(load);
@@ -296,6 +297,7 @@ module.exports = function (load) {
         const response = await webRequest({
             url: oauthToken,
             method: 'POST',
+            returnBody: true,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: 'application/json',
@@ -316,11 +318,61 @@ module.exports = function (load) {
 
         if (accessToken) {
             transaction.stop(load.TransactionStatus.Passed);
-            return true;
+            return accessToken;
         }
 
         load.log(
             `oauth token failed: status=${response.status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return null;
+    }
+
+    /**
+     * Varianta 1 — Token + Revoke in the same iteration:
+     *   1. calls the full token flow (finalize + token, each with their own transaction),
+     *   2. POSTs to `/api/v1/oauth2/revoke` with the freshly obtained access_token.
+     * Passes when the JSON response contains `status: "SUCCESS"`.
+     */
+    async function dealwithOauthRevoke() {
+        const accessToken = await dealwithOauthToken();
+
+        if (!accessToken) {
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.revoke');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthRevoke,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+            },
+            body: {
+                token: accessToken,
+                token_type_hint: 'access_token',
+            },
+            extractors: [
+                new load.JsonPathExtractor('status', {
+                    path: '$.status',
+                }),
+            ],
+        }).send();
+
+        const { status } = response.extractors;
+
+        if (status === 'SUCCESS') {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth revoke failed: status=${response.status} body_status=${status}`,
             load.LogLevel.error,
         );
         transaction.stop(load.TransactionStatus.Failed);
@@ -336,5 +388,6 @@ module.exports = function (load) {
         dealwithIdentityCreateSession,
         dealwithOauthAuthorize,
         dealwithOauthToken,
+        dealwithOauthRevoke,
     };
 };
