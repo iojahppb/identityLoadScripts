@@ -1,0 +1,10 @@
+parameters:
+  - name: accessToken
+    type: csv
+    fileName: data/IdentityOauthBFAccessTokens.txt
+    columnName: accessToken
+    nextValue: iteration
+    nextRow: random
+    onEnd: loop
+
+

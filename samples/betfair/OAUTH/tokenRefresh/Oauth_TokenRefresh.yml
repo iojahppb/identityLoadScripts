@@ -1,0 +1,82 @@
+httpConnection:                         # Configuration for the Net Loader component
+  maxPersistentConnectionsPerHost: 6    # The maximum number of connections per host a Vuser can open simultaneously (browser emulation).
+  maxConnectedHosts: 30                 # The maximum number of connected hosts per Vuser at any time.
+  maxRedirectDepth: 10                  # The maximum number of redirects when sending a request.
+  keepAliveTimeout: 60                  # Specifies the keep-alive period (in seconds) for an active network connection.
+  connectTimeout: 120                   # Specifies the maximum amount of time (in seconds) a dial will wait for a "connect" to complete.
+  abruptClose: false                    # If true, SO_LINGER is set to 0. The socket will not enter TIME_WAIT state, and can be used immediately.
+  requestTimeout: 120                   # Specifies the timeout (in seconds) to wait for an HTTP request to complete.
+
+proxy:                                  # Configuration for Proxy server
+  usePAC: false                         # Indicates whether to use proxy automatic configuration script during send requests.
+  pacAddress: ""                        # Automatic configuration script address. Format: "http://pacaddress".
+  useProxy: false                       # Indicates whether to use proxy during send requests.
+  proxyServer: ""                       # Proxy server to use. Format: "server:port".
+  proxyDomain: ""                       # Proxy server authentication domain.
+  proxyUser: ""                         # Proxy server authentication user name.
+  proxyPassword: ""                     # Proxy server authentication password.
+  proxyAuthenticationType: ""           # Proxy server authentication type. Possible values are ["basic", "ntlm"].
+  excludedHosts: []                   # Proxy hosts exception list. Use regular expressions, for example ['prefix.*', '.*.domain']
+
+ssl:
+  disableHTTP2: true                   # If true, HTTP/2 will be disabled
+  ignoreBadCertificate: false           # If true, SSL accepts any certificate presented by the server and any hostname in that certificate.
+  tlsMaxVersion: tls12                  # Maximum SSL/TLS version that is acceptable. Possible values are [tls10, tls11, tls12, tls13]. Default maximum version is tls12.
+
+replay:
+  simulateNewUser: false                  # If true, simulates a new Vuser in each iteration (relevant for closing connections).
+  saveSnapshots: "never"               # Specify when to save a snapshot file for WebRequest. Possible values are ["always", "error", "never"].
+  useCache: false                       # If true, resources response is cached, based on response headers.
+  enableDynatrace: false                # Enable Dynatrace AppMon monitoring.
+  resourceHttpErrorAsWarning: true     # If true, the log level WARNING is logged, if an issue occurs when obtaining the resource. If false, log level ERROR is logged if an issue occurs.
+
+vts:                                    # Configuration for VTS proxy server
+  useProxy: false                       # If true, uses proxy for VTS requests.
+  proxyServer: ""                       # Proxy server to use. Format: "server:port".
+  proxyUser: ""                         # Proxy server authentication user name.
+  proxyPassword: ""                     # Proxy server authentication password.
+
+encryption:
+  keyLocation: ""                       # Location of the file containing the key used for data decryption. Format: "folder/keyFile.txt".
+
+vuserLogger:                            # Configuration for Vuser logger
+  maxBufferSize: 0                   # The maximum buffer size for each Vuser logger.
+  logMode: full                        # Specify when to create the log file. Possible values are [full, error, none].
+  logLevel: error                       # The log level for Vuser logger. Possible values are [error, warning, info, debug, trace].
+  showInConsole: false                   # If true, all the Vuser logging is printed to the console.
+
+flow:                                   #Flow Control definition, please refer to documentation for more details.
+ # Allow the user to enable or disable the flow control
+  enabled: true
+  initialize:
+    items:                                            #List of items to run.
+      - name: "vuser_init"
+
+  run:
+    # Define the logic between the items, can be sequential, random or shuffle.
+    logic: "sequential"
+    items:
+      - name: 'main loop'
+        logic: 'sequential'
+        loop: 1
+        items:
+          - name: "OAuth Token Refresh"
+
+      - name: "Clear Cookies"
+
+
+  finalize:
+    items:
+
+
+thinkTime:                              # Configuration for think time, to control how the Vuser uses think time during script execution.
+  type: 'asRecorded'                    # Specifies the think time type to control how the Vuser uses think time during script execution. Possible values are: [ignore, asRecorded, multiply, randomPercentage].
+  limit: -1                             # Limits the recorded think time (in seconds) during execution. Set -1 for disabling think time limit.
+
+
+userArguments:
+  THINK_TIME: "1"
+  DOMAIN: ".betfair.com"
+  OAUTH_CLIENT_ID_ENCODED: "Basic cG9rZXI6c2VjcmV0"
+
+

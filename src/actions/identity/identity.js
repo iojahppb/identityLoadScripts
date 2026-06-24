@@ -330,6 +330,62 @@ module.exports = function (load) {
     }
 
     /**
+     * Mirrors the Java `refreshTokenRefreshHappyFlow` test:
+     *   1. takes an existing access token loaded from a data file (IdentityOauthBFAccessTokens / IdentityOauthPPAccessTokens),
+     *   2. POSTs to `/api/v1/oauth2/token` with `grant_type=refresh_token` and the access token as `refresh_token`,
+     *      using `OAUTH_CLIENT_ID_ENCODED` as the `Authorization` header.
+     * Passes when the JSON response contains both a non-empty `access_token` and `refresh_token`.
+     */
+    async function dealwithOauthTokenRefresh() {
+        const { accessToken: inputToken } = load.params;
+
+        if (!inputToken) {
+            load.log('oauth tokenRefresh: no accessToken in params', load.LogLevel.error);
+            return false;
+        }
+
+        const transaction = new load.Transaction('custTech.oauth.tokenRefresh');
+        transaction.start();
+
+        const response = await webRequest({
+            url: oauthToken,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: 'application/json',
+                Authorization: OAUTH_CLIENT_ID_ENCODED,
+            },
+            body: {
+                grant_type: 'refresh_token',
+                refresh_token: inputToken,
+            },
+            extractors: [
+                new load.JsonPathExtractor('accessToken', {
+                    path: '$.access_token',
+                }),
+                new load.JsonPathExtractor('refreshToken', {
+                    path: '$.refresh_token',
+                }),
+            ],
+        }).send();
+
+        const { accessToken, refreshToken } = response.extractors;
+
+        if (accessToken && refreshToken) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(
+            `oauth tokenRefresh failed: status=${response.status}`,
+            load.LogLevel.error,
+        );
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
+    /**
      * Varianta 1 — Token + Revoke in the same iteration:
      *   1. calls the full token flow (finalize + token, each with their own transaction),
      *   2. POSTs to `/api/v1/oauth2/revoke` with the freshly obtained access_token.
@@ -388,6 +444,7 @@ module.exports = function (load) {
         dealwithIdentityCreateSession,
         dealwithOauthAuthorize,
         dealwithOauthTokenAuthorizationCode,
+        dealwithOauthTokenRefresh,
         dealwithOauthRevoke,
     };
 };
