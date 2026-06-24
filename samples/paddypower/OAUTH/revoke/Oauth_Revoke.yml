@@ -62,7 +62,7 @@ flow:                                   #Flow Control definition, please refer t
         logic: 'sequential'
         loop: 1
         items:
-          - name: "OAuth Token"
+          - name: "OAuth Revoke"
 
       - name: "Clear Cookies"
 

@@ -4,15 +4,16 @@ module.exports = function (load) {
     } = load.config.user.args;
 
     const {
-        dealwithOauthToken,
+        dealwithOauthTokenAuthorizationCode,
     } = require('../identity/identity')(load);
 
-    async function oauthTokenAction() {
-        await dealwithOauthToken();
+    async function oauthTokenAuthorizationCodeAction() {
+        await dealwithOauthTokenAuthorizationCode();
         load.sleep(THINK_TIME);
     }
 
     return {
-        oauthTokenAction,
+        oauthTokenAuthorizationCodeAction,
     };
 };
+

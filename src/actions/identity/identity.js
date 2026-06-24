@@ -284,14 +284,14 @@ module.exports = function (load) {
      *      using `OAUTH_CLIENT_ID_ENCODED` as the `Authorization` header.
      * Passes when the JSON response contains a non-empty `access_token`.
      */
-    async function dealwithOauthToken() {
+    async function dealwithOauthTokenAuthorizationCode() {
         const ott = await oauthFinalizeForCode();
 
         if (!ott) {
             return false;
         }
 
-        const transaction = new load.Transaction('custTech.oauth.token');
+        const transaction = new load.Transaction('custTech.oauth.tokenAuthorizationCode');
         transaction.start();
 
         const response = await webRequest({
@@ -322,7 +322,7 @@ module.exports = function (load) {
         }
 
         load.log(
-            `oauth token failed: status=${response.status}`,
+            `oauth tokenAuthorizationCode failed: status=${response.status}`,
             load.LogLevel.error,
         );
         transaction.stop(load.TransactionStatus.Failed);
@@ -336,7 +336,7 @@ module.exports = function (load) {
      * Passes when the JSON response contains `status: "SUCCESS"`.
      */
     async function dealwithOauthRevoke() {
-        const accessToken = await dealwithOauthToken();
+        const accessToken = await dealwithOauthTokenAuthorizationCode();
 
         if (!accessToken) {
             return false;
@@ -387,7 +387,7 @@ module.exports = function (load) {
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
         dealwithOauthAuthorize,
-        dealwithOauthToken,
+        dealwithOauthTokenAuthorizationCode,
         dealwithOauthRevoke,
     };
 };
