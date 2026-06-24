@@ -76,5 +76,5 @@ thinkTime:                              # Configuration for think time, to contr
 
 userArguments: 
   THINK_TIME: "1"
-  DOMAIN: ".betfair.com"
-  PASSWORD: "parola03"
+  DOMAIN: ".betfair.com.nxt.ppbdev.com"
+  PASSWORD: "P@rola03"
