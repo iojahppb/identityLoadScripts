@@ -237,7 +237,7 @@ module.exports = function (load) {
      * Returns the extracted code (one-time token) or `null` on failure.
      * Used internally by the OAuth token flow.
      */
-    async function oauthFinalizeForCode() {
+    async function dealwithOauthFinalize() {
         const transaction = new load.Transaction('custTech.oauth.finalize');
         transaction.start();
 
@@ -285,7 +285,7 @@ module.exports = function (load) {
      * Passes when the JSON response contains a non-empty `access_token`.
      */
     async function dealwithOauthTokenAuthorizationCode() {
-        const ott = await oauthFinalizeForCode();
+        const ott = await dealwithOauthFinalize();
 
         if (!ott) {
             return false;
@@ -443,6 +443,7 @@ module.exports = function (load) {
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
         dealwithOauthAuthorize,
+        dealwithOauthFinalize,
         dealwithOauthTokenAuthorizationCode,
         dealwithOauthTokenRefresh,
         dealwithOauthRevoke,
