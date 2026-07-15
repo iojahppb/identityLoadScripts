@@ -19,7 +19,8 @@ proxy:                                  # Configuration for Proxy server
   excludedHosts: []                   # Proxy hosts exception list. Use regular expressions, for example ['prefix.*', '.*.domain']
 
 ssl:
-  disableHTTP2: true                   # If true, HTTP/2 will be disabled
+  disableHTTP2: false                   # If true, HTTP/2 will be disabled
+  disableHTTP3: true                    # If true, HTTP/3 will be disabled
   ignoreBadCertificate: false           # If true, SSL accepts any certificate presented by the server and any hostname in that certificate.
   tlsMaxVersion: tls12                  # Maximum SSL/TLS version that is acceptable. Possible values are [tls10, tls11, tls12, tls13]. Default maximum version is tls12.
 

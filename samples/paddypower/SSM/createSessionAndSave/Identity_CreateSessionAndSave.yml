@@ -19,8 +19,8 @@ proxy:
   excludedHosts: []
 
 ssl:
-  disableHTTP2: false
-  disableHTTP3: true
+  disableHTTP2: false                   # If true, HTTP/2 will be disabled
+  disableHTTP3: true                    # If true, HTTP/3 will be disabled
   ignoreBadCertificate: true
   tlsMaxVersion: tls12
 
