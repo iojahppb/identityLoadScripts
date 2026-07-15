@@ -7,6 +7,7 @@ module.exports = function (load) {
         OAUTH_CLIENT_ID,
         OAUTH_REDIRECT_URI,
         OAUTH_CLIENT_ID_ENCODED,
+        CREATE_ACCESS_TOKENS,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -175,7 +176,7 @@ module.exports = function (load) {
         const response = await webRequest({
             url: `https://${SSM_ENDPOINT}:443/SessionManagementService/v1.0`,
             method: 'POST',
-            // returnBody: true,
+            returnBody: true,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 Accept: '*/*',
@@ -186,9 +187,108 @@ module.exports = function (load) {
 
         if (response.size > 0) {
             transaction.stop(load.TransactionStatus.Passed);
+            const bodyStr = response.body || '';
+            const match = bodyStr.match(/sessionToken>([^<]+)</);
+            return match ? match[1] : null;
         } else {
             transaction.stop(load.TransactionStatus.Failed);
+            return null;
         }
+    }
+
+    function getDataFilePaths() {
+        const domainUpper = (DOMAIN || '').toUpperCase();
+        const suffix = domainUpper.includes('BETFAIR') ? 'BF' : domainUpper.includes('PADDYPOWER') ? 'PP' : 'SBG';
+        const baseDir = '/storm/data';
+        return {
+            baseDir,
+            sessionsFile: `${baseDir}/IdentitySso${suffix}Sessions.txt`,
+            accessTokensFile: `${baseDir}/IdentityOauth${suffix}AccessTokens.txt`,
+            markerFile: `${baseDir}/.initialized`,
+        };
+    }
+
+    let dataFilesInitialized = false;
+
+    function initDataFilesIfNeeded() {
+        if (dataFilesInitialized) return;
+        const fs = require('fs');
+        const { baseDir, sessionsFile, accessTokensFile, markerFile } = getDataFilePaths();
+
+        if (!fs.existsSync(baseDir)) {
+            try { fs.mkdirSync(baseDir, { recursive: true }); } catch (e) { /* */ }
+        }
+
+        // Remove stale marker from a previous run (older than 30s) so the first vuser can claim it
+        try {
+            const stats = fs.statSync(markerFile);
+            if (Date.now() - stats.mtimeMs > 30000) {
+                fs.unlinkSync(markerFile);
+            }
+        } catch (e) { /* doesn't exist — fine */ }
+
+        try {
+            // 'wx' flag = write exclusive: fails if file already exists (atomic check)
+            fs.writeFileSync(markerFile, new Date().toISOString(), { flag: 'wx' });
+
+            // Only the vuser that successfully created the marker reaches here
+            try { fs.unlinkSync(sessionsFile); } catch (e) { /* */ }
+            fs.writeFileSync(sessionsFile, 'ssoid\n');
+
+            if (CREATE_ACCESS_TOKENS === true || CREATE_ACCESS_TOKENS === 'true') {
+                try { fs.unlinkSync(accessTokensFile); } catch (e) { /* */ }
+                fs.writeFileSync(accessTokensFile, 'accessToken\n');
+            }
+        } catch (e) {
+            // Another vuser already created the marker — skip
+        }
+
+        dataFilesInitialized = true;
+    }
+
+    /**
+     * Creates a session (and optionally an OAuth access token) and appends the
+     * resulting value(s) to the corresponding data file(s) under /storm/data.
+     * Intended to be run locally for data generation.
+     * Controlled by userArgument CREATE_ACCESS_TOKENS (true/false).
+     */
+    async function createSessionsAndSaveToFile() {
+        const fs = require('fs');
+        const { sessionsFile, accessTokensFile } = getDataFilePaths();
+
+        initDataFilesIfNeeded();
+
+        const sessionToken = await dealwithIdentityCreateSession();
+
+        if (!sessionToken) {
+            load.log('createSessionsAndSaveToFile: no session token obtained', load.LogLevel.error);
+            return null;
+        }
+
+        fs.appendFileSync(sessionsFile, sessionToken + '\n');
+
+        if (CREATE_ACCESS_TOKENS === true || CREATE_ACCESS_TOKENS === 'true') {
+            // Put the freshly created session token into the cookie jar so that
+            // dealwithOauthFinalize can pick it up via getLoadedCookieValueByName('ssoid').
+            load.addCookies(new load.Cookie({
+                name: 'ssoid',
+                value: sessionToken,
+                domain: `${DOMAIN}`,
+                path: '/',
+            }));
+            load.config.loadedCookies = load.config.loadedCookies || {};
+            load.config.loadedCookies.ssoid = sessionToken;
+
+            const accessToken = await dealwithOauthTokenAuthorizationCode();
+
+            if (accessToken) {
+                fs.appendFileSync(accessTokensFile, accessToken + '\n');
+            } else {
+                load.log('createSessionsAndSaveToFile: no access token obtained', load.LogLevel.error);
+            }
+        }
+
+        return sessionToken;
     }
 
     /**
@@ -308,17 +408,17 @@ module.exports = function (load) {
                 code: ott,
             },
             extractors: [
-                new load.JsonPathExtractor('accessToken', {
-                    path: '$.access_token',
+                new load.JsonPathExtractor('refreshToken', {
+                    path: '$.refresh_token',
                 }),
             ],
         }).send();
 
-        const { accessToken } = response.extractors;
+        const { refreshToken } = response.extractors;
 
-        if (accessToken) {
+        if (refreshToken) {
             transaction.stop(load.TransactionStatus.Passed);
-            return accessToken;
+            return refreshToken;
         }
 
         load.log(
@@ -442,6 +542,7 @@ module.exports = function (load) {
         dealwithIdentityVerifySession,
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
+        createSessionsAndSaveToFile,
         dealwithOauthAuthorize,
         dealwithOauthFinalize,
         dealwithOauthTokenAuthorizationCode,

@@ -1,0 +1,81 @@
+httpConnection:
+  maxPersistentConnectionsPerHost: 6
+  maxConnectedHosts: 30
+  maxRedirectDepth: 10
+  keepAliveTimeout: 60
+  connectTimeout: 120
+  abruptClose: false
+  requestTimeout: 120
+
+proxy:
+  usePAC: false
+  pacAddress: ""
+  useProxy: false
+  proxyServer: ""
+  proxyDomain: ""
+  proxyUser: ""
+  proxyPassword: ""
+  proxyAuthenticationType: ""
+  excludedHosts: []
+
+ssl:
+  disableHTTP2: false
+  disableHTTP3: true
+  ignoreBadCertificate: true
+  tlsMaxVersion: tls12
+
+replay:
+  simulateNewUser: false
+  saveSnapshots: "never"
+  useCache: false
+  enableDynatrace: false
+  resourceHttpErrorAsWarning: true
+
+vts:
+  useProxy: false
+  proxyServer: ""
+  proxyUser: ""
+  proxyPassword: ""
+
+encryption:
+  keyLocation: ""
+
+vuserLogger:
+  maxBufferSize: 0
+  logMode: full
+  logLevel: trace
+  showInConsole: false
+
+flow:
+  enabled: true
+  initialize:
+    items:
+      - name: "vuser_init"
+
+  run:
+    logic: "sequential"
+    items:
+
+      - name: 'main loop'
+        logic: 'sequential'
+        loop: 50
+        items:
+          - name: "Identity SSM Create Session And Save"
+          - name: "Clear Cookies"
+
+  finalize:
+    items:
+
+thinkTime:
+  type: 'asRecorded'
+  limit: -1
+
+userArguments:
+  THINK_TIME: "0.25"
+  DOMAIN: ".betfair.com"
+  SSM_ENDPOINT: "ssmbf.prd.internal"
+  CREATE_ACCESS_TOKENS: "false"
+  OAUTH_CLIENT_ID: "uk-betfair-desktop-client"
+  OAUTH_REDIRECT_URI: "https://api-qc.starsweb.io/pam/psn-auth-adapter/api/callback"
+  OAUTH_CLIENT_ID_ENCODED: "Basic cG9rZXI6c2VjcmV0"
+

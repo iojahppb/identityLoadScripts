@@ -26,6 +26,7 @@ const { identityKeepAliveAction } = require('./src/actions/journeys/IdentitySSOK
 const { identityVerifySessionAction, parallelIdentityVerifySessionAction } = require('./src/actions/journeys/IdentitySSMVerifySession')(load);
 const { identitySSMKeepAliveAction } = require('./src/actions/journeys/IdentitySSMKeepAlive')(load);
 const { identitySSMCreateSessionAction } = require('./src/actions/journeys/IdentitySSMCreateSession')(load);
+const { identitySSMCreateSessionAndSaveAction } = require('./src/actions/journeys/IdentitySSMCreateSessionAndSave')(load);
 const { identityLogoutAction } = require('./src/actions/journeys/IdentitySSOLogout')(load);
 const { identityLoginAction } = require('./src/actions/journeys/IdentitySSOLogin')(load);
 const { oauthAuthorizeAction } = require('./src/actions/journeys/OauthAuthorize')(load);
@@ -46,6 +47,7 @@ load.action('Identity SSO Login', identityLoginAction);
 load.action('Identity SSM Verify Session', identityVerifySessionAction);
 load.action('Identity SSM Keep Alive', identitySSMKeepAliveAction);
 load.action('Identity SSM Create Session', identitySSMCreateSessionAction);
+load.action('Identity SSM Create Session And Save', identitySSMCreateSessionAndSaveAction);
 load.action('Parallel Identity SSM Verify Session', parallelIdentityVerifySessionAction);
 load.action('OAuth Authorize', oauthAuthorizeAction);
 load.action('OAuth Finalize', oauthFinalizeAction);
