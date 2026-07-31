@@ -4,10 +4,14 @@ module.exports = function (load) {
         PRODUCT_NAME,
         PASSWORD,
         SSM_ENDPOINT,
+        ISS_ENDPOINT,
         OAUTH_CLIENT_ID,
         OAUTH_REDIRECT_URI,
         OAUTH_CLIENT_ID_ENCODED,
         CREATE_ACCESS_TOKENS,
+        SHOULD_USE_EXISTING_USERNAMES,
+        IP_ADDRESS,
+        JA4,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -535,6 +539,69 @@ module.exports = function (load) {
         return false;
     }
 
+    // ─── ISS Login helpers ────────────────────────────────────────────────
+
+    function randomString(length) {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
+
+    function randomIpAddress() {
+        // Range: 82.1.1.0 – 82.35.255.255
+        const octet2 = Math.floor(Math.random() * 35) + 1; // 1–35
+        const octet3 = Math.floor(Math.random() * 256);    // 0–255
+        const octet4 = Math.floor(Math.random() * 256);    // 0–255
+        return `82.${octet2}.${octet3}.${octet4}`;
+    }
+
+    async function dealWithIssLogin() {
+        const transaction = new load.Transaction('custTech.iss.soap.login');
+        transaction.start();
+
+        // ── username ──────────────────────────────────────────────────────
+        let username;
+        if (SHOULD_USE_EXISTING_USERNAMES === true || SHOULD_USE_EXISTING_USERNAMES === 'true') {
+            username = load.params.username;
+        } else {
+            username = randomString(10);
+        }
+
+        // ── IP address ────────────────────────────────────────────────────
+        const resolvedIp = (IP_ADDRESS === 'random') ? randomIpAddress() : IP_ADDRESS;
+
+        // ── JA4 ───────────────────────────────────────────────────────────
+        const resolvedJa4 = (JA4 === 'random') ? `ja4${randomString(10)}` : JA4;
+
+        const soapBody = `<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:sec="http://www.betfair.com/security/" xmlns:iden="http://www.betfair.com/servicetypes/v1/Identitysso/"><soapenv:Header><sec:Credentials></sec:Credentials></soapenv:Header><soapenv:Body><iden:LoginRequest><iden:username>${username}</iden:username><iden:password>${PASSWORD}</iden:password><iden:productEntityName><iden:name>loadTestProduct</iden:name></iden:productEntityName><iden:channel>WEB</iden:channel><iden:brand>${BRAND}</iden:brand><iden:loginContext><iden:entry key="IP_ADDRESS"><iden:String>${resolvedIp}</iden:String></iden:entry><iden:entry key="DOMAIN"><iden:String>${DOMAIN}</iden:String></iden:entry><iden:entry key="PATH"><iden:String>/api/login</iden:String></iden:entry><iden:entry key="TMX_ID"><iden:String>loadTestTmxID</iden:String></iden:entry><iden:entry key="JA4"><iden:String>${resolvedJa4}</iden:String></iden:entry></iden:loginContext></iden:LoginRequest></soapenv:Body></soapenv:Envelope>`;
+
+        let response;
+
+        response = await webRequest({
+            url: `https://${ISS_ENDPOINT}:443/IdentityssoService/v1.0`,
+            method: 'POST',
+            returnBody: true,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                Accept: '*/*',
+                'user-agent': 'Mozilla/5.0 (Linux; Android 5.0; SM-G900P Build/LRX21T) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Mobile Safari/537.36',
+            },
+            body: soapBody,
+        }).send();
+
+        if (response.size > 0) {
+            transaction.stop(load.TransactionStatus.Passed);
+            return true;
+        }
+
+        load.log(`ISS login failed: username=${username} status=${response.status}`, load.LogLevel.error);
+        transaction.stop(load.TransactionStatus.Failed);
+        return false;
+    }
+
     return {
         dealwithIdentitySsoKeepAlive,
         dealwithIdentitySsoLogout,
@@ -548,5 +615,6 @@ module.exports = function (load) {
         dealwithOauthTokenAuthorizationCode,
         dealwithOauthTokenRefresh,
         dealwithOauthRevoke,
+        dealWithIssLogin,
     };
 };

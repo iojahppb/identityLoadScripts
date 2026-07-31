@@ -34,6 +34,7 @@ const { oauthFinalizeAction } = require('./src/actions/journeys/OauthFinalize')(
 const { oauthTokenAuthorizationCodeAction } = require('./src/actions/journeys/OauthTokenAuthorizationCode')(load);
 const { oauthTokenRefreshAction } = require('./src/actions/journeys/OauthTokenRefresh')(load);
 const { oauthRevokeAction } = require('./src/actions/journeys/OauthRevoke')(load);
+const { identityIssLoginAction } = require('./src/actions/journeys/IdentityIssLogin')(load);
 
 load.initialize(async () => { });
 load.initialize('vuser_init', vuserInit.bind(this, load));
@@ -54,6 +55,7 @@ load.action('OAuth Finalize', oauthFinalizeAction);
 load.action('OAuth Token Authorization Code', oauthTokenAuthorizationCodeAction);
 load.action('OAuth Token Refresh', oauthTokenRefreshAction);
 load.action('OAuth Revoke', oauthRevokeAction);
+load.action('ISS Login', identityIssLoginAction);
 
 load.action('Empty Action', async () => { });
 
