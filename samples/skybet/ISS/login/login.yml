@@ -73,7 +73,7 @@ userArguments:
   THINK_TIME: "0.25"
   DOMAIN: ".skybet.com"
   ISS_ENDPOINT: "isssbg.prd.internal"
-  PASSWORD: "parola03"
+  PASSWORD: "964459"
   SHOULD_USE_EXISTING_USERNAMES: "true"
   IP_ADDRESS: "random"
   JA4: "random"
