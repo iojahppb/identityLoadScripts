@@ -1,0 +1,10 @@
+parameters:
+  - name: ignored
+    type: csv
+    fileName: data/sbgUsers.txt
+    columnName: accountId
+    nextValue: iteration
+    nextRow: sequential
+    onEnd: loop
+
+

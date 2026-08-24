@@ -1,0 +1,17 @@
+parameters:
+  - name: accountId
+    type: csv
+    fileName: data/sbgUsers.txt
+    columnName: accountId
+    nextValue: iteration
+    nextRow: random
+    onEnd: loop
+  - name: userId
+    type: csv
+    fileName: data/sbgUsers.txt
+    columnName: userId
+    nextValue: iteration
+    nextRow: same as accountId
+    onEnd: loop
+
+

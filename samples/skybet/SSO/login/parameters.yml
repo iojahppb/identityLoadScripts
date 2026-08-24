@@ -1,0 +1,9 @@
+parameters:
+  - name: username
+    type: csv
+    fileName: data/sbgUsers.txt
+    columnName: username
+    nextValue: always
+    nextRow: random
+    onEnd: loop
+
