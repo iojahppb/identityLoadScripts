@@ -59,7 +59,7 @@
 
     "zip_bf_sso_viewRecoverPassword": "cat ./samples/betfair/SSO/viewRecoverPassword/parameters.yml > parameters.yml && cat ./samples/betfair/SSO/viewRecoverPassword/viewRecoverPassword.yml > rts.yml && mkdir -p zips && zip -r zips/identitySsoBfViewRecoverPassword${SUFFIX:+$SUFFIX}.zip . -x './samples/*' './zips/*' './results/*' './.idea/*' './.git/*' './transactions.yml'",
     "zip_pp_sso_viewRecoverPassword": "cat ./samples/paddypower/SSO/viewRecoverPassword/parameters.yml > parameters.yml && cat ./samples/paddypower/SSO/viewRecoverPassword/viewRecoverPassword.yml > rts.yml && mkdir -p zips && zip -r zips/identitySsoPpViewRecoverPassword${SUFFIX:+$SUFFIX}.zip . -x './samples/*' './zips/*' './results/*' './.idea/*' './.git/*' './transactions.yml'",
-    "zip_sbg_sso_viewRecoverPassword": "cat ./samples/skybet/SSO/viewRecoverPassword/parameters.yml > parameters.yml && cat ./samples/skybet/SSO/viewRecoverPassword/viewRecoverPassword.yml > rts.yml && mkdir -p zips && zip -r zips/identitySsoSbgViewRecoverPassword${SUFFIX:+$SUFFIX}.zip . -x './samples/*' './zips/*' './results/*' './.idea/*' './.git/*' './transactions.yml'",
+    "zip_sbg_sso_viewRecoverPassword": "cat ./samples/skybet/SSO/viewRecoverPassword/parameters.yml > parameters.yml && cat ./samples/skybet/SSO/viewRecoverPassword/viewRecoverPassword.yml > rts.yml && mkdir -p zips && zip -r zips/identitySsoSbgViewRecoverPassword${SUFFIX:+$SUFFIX}.zip . -x './samples/*' './zips/*' './results/*' './.idea/*' './.git/*' './transactions.yml'"
   },
   "author": "",
   "license": "ISC"

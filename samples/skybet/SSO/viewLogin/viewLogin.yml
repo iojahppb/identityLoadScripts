@@ -74,4 +74,7 @@ thinkTime:
 userArguments:
   THINK_TIME: "1"
   DOMAIN: ".skybet.com"
+  SHOULD_CALL_FOR_RESOURCES: "true"
+  CDN_HOST: "ie1-ssosbg.sbgcdn.com"
+  CDN_VERSION: "3400"
 

@@ -74,4 +74,7 @@ thinkTime:
 userArguments:
   THINK_TIME: "1"
   DOMAIN: ".paddypower.com"
+  SHOULD_CALL_FOR_RESOURCES: "false"
+  CDN_HOST: "ie1-ssopp.cdnppb.net"
+  CDN_VERSION: "3400"
 

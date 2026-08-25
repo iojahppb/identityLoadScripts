@@ -12,6 +12,9 @@ module.exports = function (load) {
         SHOULD_USE_EXISTING_USERNAMES,
         IP_ADDRESS,
         JA4,
+        CDN_HOST,
+        CDN_VERSION,
+        SHOULD_CALL_FOR_RESOURCES,
     } = load.config.user.args;
 
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
@@ -75,13 +78,41 @@ module.exports = function (load) {
         const transaction = new load.Transaction('custTech.sso.view.login');
         transaction.start();
 
-        const { username } = load.params;
-
         webRequest({
             url: `${identitySsoEndpoint}/view/login`,
             method: 'GET',
             disableRedirection: true
         }).send();
+
+        if (SHOULD_CALL_FOR_RESOURCES === true || SHOULD_CALL_FOR_RESOURCES === 'true') {
+            const v = CDN_VERSION || '3400';
+            const resourcePaths = [
+                `/resources/bundles/module-info_yui_platformapi_moduleapi_style-skybet_module_footer-v2_header-skybet_header_login-skybet_login/all_${v}_.css`,
+                `/resources/groups/core-jquery/all_${v}_.js`,
+                `/resources/groups/yui-core/all_${v}_.js`,
+                `/resources/groups/core/all_${v}_.js`,
+                `/resources/bundles/appspot_header_login/all_${v}_.js`,
+                `/page/images/logo/logo-skybet_${v}_.svg`,
+                `/page/images/icon-show-sky_${v}_.svg`,
+                `/page/fonts/Sky-Text-Medium_${v}_.woff`,
+                `/page/fonts/Sky-Text-Regular_${v}_.woff`,
+                `/page/images/logo/logo-skyvegas_${v}_.svg`,
+                `/page/images/logo/logo-skycasino_${v}_.svg`,
+                `/page/images/logo/logo-skypoker_${v}_.svg`,
+                `/page/images/logo/logo-skybingo_${v}_.svg`,
+                `/page/images/logo/logo-super6_${v}_.svg`,
+                `/page/images/logo/logo-sportinglife_${v}_.svg`,
+                `/page/images/logo/logo-itv7_${v}_.svg`,
+            ];
+
+            for (const path of resourcePaths) {
+                await webRequest({
+                    url: `https://${CDN_HOST}${path}`,
+                    method: 'GET',
+                }).send();
+            }
+        }
+
         transaction.stop(load.TransactionStatus.Passed);
         return true;
     }

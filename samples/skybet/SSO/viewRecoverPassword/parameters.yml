@@ -1,2 +1,8 @@
 parameters:
-
+  - name: ignored
+    type: csv
+    fileName: data/sbgUsers.txt
+    columnName: username
+    nextValue: iteration
+    nextRow: sequential
+    onEnd: loop
