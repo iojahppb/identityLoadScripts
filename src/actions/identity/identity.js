@@ -17,26 +17,21 @@ module.exports = function (load) {
     const BRAND = ['BETFAIR', 'PADDYPOWER', 'SKYBET'].find((b) => DOMAIN.toUpperCase().includes(b)) || 'UNKNOWN';
 
     const {
-        identityLogin,
-        identityKeepAlive,
-        identityLogout,
-        oauthAuthorize,
-        oauthFinalize,
-        oauthToken,
-        oauthRevoke,
+        identitySsoEndpoint,
+        oauthEndpoint,
     } = CustomerTribeEndpoints;
 
     const { webRequest } = require('../../common/webrequest')(load);
     const { getLoadedCookieValueByName } = require('../../common/utils')(load);
 
     async function dealwithIdentitySsoLogin() {
-        const transaction = new load.Transaction('custTech.iss.login');
+        const transaction = new load.Transaction('custTech.sso.login');
         transaction.start();
 
         const { username } = load.params;
 
         const response = await webRequest({
-            url: identityLogin,
+            url: `${identitySsoEndpoint}/api/login`,
             method: 'POST',
             disableRedirection: true,
             headers: {
@@ -80,7 +75,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: identityKeepAlive,
+            url: `${identitySsoEndpoint}/api/keepAlive`,
             headers: {
                 Referer: `https://myaccount${DOMAIN}/summary/accountsummary`,
                 'Content-Type': 'text/html',
@@ -100,7 +95,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: identityLogout,
+            url: `${identitySsoEndpoint}/api/logout`,
             method: 'POST',
             disableRedirection: true,
             headers: {
@@ -305,7 +300,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: oauthAuthorize,
+            url: `${oauthEndpoint}/api/v1/oauth2/authorize`,
             method: 'GET',
             disableRedirection: true,
             headers: {
@@ -346,7 +341,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: oauthFinalize,
+            url: `${oauthEndpoint}/api/v1/oauth2/finalize`,
             method: 'GET',
             disableRedirection: true,
             headers: {
@@ -399,7 +394,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: oauthToken,
+            url: `${oauthEndpoint}/api/v1/oauth2/token`,
             method: 'POST',
             returnBody: true,
             headers: {
@@ -452,7 +447,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: oauthToken,
+            url: `${oauthEndpoint}/api/v1/oauth2/token`,
             method: 'POST',
             returnBody: true,
             headers: {
@@ -506,7 +501,7 @@ module.exports = function (load) {
         transaction.start();
 
         const response = await webRequest({
-            url: oauthRevoke,
+            url: `${oauthEndpoint}/api/v1/oauth2/revoke`,
             method: 'POST',
             returnBody: true,
             headers: {

@@ -1,11 +1,6 @@
 {
     "CustomerTribeEndpoints": {
-        "identityLogin": "https://identitysso${DOMAIN}/api/login",
-        "identityKeepAlive": "https://identitysso${DOMAIN}/api/keepAlive",
-        "identityLogout": "https://identitysso${DOMAIN}/api/logout",
-        "oauthAuthorize": "https://auth${DOMAIN}/api/v1/oauth2/authorize",
-        "oauthFinalize": "https://auth${DOMAIN}/api/v1/oauth2/finalize",
-        "oauthToken": "https://auth${DOMAIN}/api/v1/oauth2/token",
-        "oauthRevoke": "https://auth${DOMAIN}/api/v1/oauth2/revoke"
+        "identitySsoEndpoint": "https://identitysso${DOMAIN}",
+        "oauthEndpoint": "https://auth${DOMAIN}"
     }
 }
