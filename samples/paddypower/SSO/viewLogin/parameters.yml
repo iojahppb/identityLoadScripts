@@ -1,0 +1,9 @@
+parameters:
+  - name: ssoid
+    type: csv
+    fileName: data/IdentitySsoPPSessions.txt
+    columnName: ssoid
+    nextValue: iteration
+    nextRow: random
+    onEnd: loop
+

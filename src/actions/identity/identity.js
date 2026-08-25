@@ -70,6 +70,37 @@ module.exports = function (load) {
         return true;
     }
 
+
+    async function dealwithIdentitySsoViewLogin() {
+        const transaction = new load.Transaction('custTech.sso.view.login');
+        transaction.start();
+
+        const { username } = load.params;
+
+        webRequest({
+            url: `${identitySsoEndpoint}/view/login`,
+            method: 'GET',
+            disableRedirection: true
+        }).send();
+        transaction.stop(load.TransactionStatus.Passed);
+        return true;
+    }
+
+    async function dealwithIdentitySsoViewRecoverPassword() {
+        const transaction = new load.Transaction('custTech.sso.view.recoverPassword');
+        transaction.start();
+
+        const { username } = load.params;
+
+        webRequest({
+            url: `${identitySsoEndpoint}/view/recoverPassword`,
+            method: 'GET',
+            disableRedirection: true
+        }).send();
+        transaction.stop(load.TransactionStatus.Passed);
+        return true;
+    }
+
     async function dealwithIdentitySsoKeepAlive() {
         const transaction = new load.Transaction('custTech.sso.keep-alive');
         transaction.start();
@@ -601,6 +632,8 @@ module.exports = function (load) {
         dealwithIdentitySsoKeepAlive,
         dealwithIdentitySsoLogout,
         dealwithIdentitySsoLogin,
+        dealwithIdentitySsoViewLogin,
+        dealwithIdentitySsoViewRecoverPassword,
         dealwithIdentityVerifySession,
         dealwithIdentityKeepAlive,
         dealwithIdentityCreateSession,
